@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import {
   Activity, AlertCircle, ArrowDownRight, ArrowUpRight, Bell, Check, ChevronDown,
   CircleHelp, Cloud, Command, ExternalLink, Eye, EyeOff, Filter, Gauge, Globe2,
@@ -84,7 +84,7 @@ export default function App() {
   const suspended = services.filter((s) => s.suspended === "suspended").length;
   const liveCount = services.length - suspended;
 
-  async function connectAccount(event: React.FormEvent) {
+  async function connectAccount(event: FormEvent) {
     event.preventDefault();
     setError(""); setNotice("");
     if (!apiKey.trim()) { setError("Paste a Render API key to connect this account."); return; }
