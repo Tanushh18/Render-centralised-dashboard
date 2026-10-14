@@ -3,7 +3,7 @@ import {
   Activity, AlertCircle, ArrowUpRight, Check, ChevronDown, CircleHelp, Cloud,
   ExternalLink, Eye, EyeOff, Filter, Gauge, Globe2, Layers3, LoaderCircle,
   LockKeyhole, Plus, RefreshCw, Search, Server, ShieldCheck, TerminalSquare,
-  Trash2, X, Zap, Rocket, RotateCw, History, KeyRound, Copy, Save, Unlock,
+  Trash2, X, Zap, Rocket, RotateCw, History, KeyRound, Save, Unlock,
   Eye as EyeIcon,
 } from "lucide-react";
 import { decryptVault, deleteSavedVault, encryptVault, hasSavedVault } from "./vault";
@@ -23,15 +23,11 @@ type VaultData = { accounts: Account[] };
 type Tab = "overview" | "logs" | "env" | "deploys";
 
 async function apiRequest<T>(account: Account, path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API}${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${account.apiKey}`,
-      Accept: "application/json",
-      ...(init.body ? { "Content-Type": "application/json" } : {}),
-      ...init.headers,
-    },
-  });
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${account.apiKey}`);
+  headers.set("Accept", "application/json");
+  if (init.body) headers.set("Content-Type", "application/json");
+  const response = await fetch(`${API}${path}`, { ...init, headers });
   if (!response.ok) {
     let detail = "";
     try { const body = await response.json(); detail = body.message || body.error || ""; } catch { /* response may not be JSON */ }
@@ -42,7 +38,7 @@ async function apiRequest<T>(account: Account, path: string, init: RequestInit =
 }
 function normalizeServices(payload: any): RenderService[] {
   if (!Array.isArray(payload)) throw new Error("Unexpected response from Render services endpoint.");
-  return payload.map((entry) => entry?.service ?? entry).filter((s) => s?.id).map((s) => ({ ...s, name: s.name || "Unnamed service" }));
+  return payload.map((entry) => entry?.service ?? entry).filter((s) => s?.id).map((s) => ({ ...s, ownerId: s.ownerId || s.owner?.id, name: s.name || "Unnamed service" }));
 }
 function normalizeList<T>(payload: any, key: string): T[] {
   if (!Array.isArray(payload)) throw new Error("Unexpected response from Render API.");
